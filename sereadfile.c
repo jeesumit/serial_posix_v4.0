@@ -32,8 +32,7 @@ int main(){
      if (num_bytes < 0) {
         fprintf(stderr, "Error reading: %s\n", strerror(errno));
      }
-     
-     
+          
      int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0666);
     if (fd == -1) {
         perror("openERROR");
