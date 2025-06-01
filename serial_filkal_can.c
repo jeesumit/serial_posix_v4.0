@@ -174,7 +174,7 @@ while (!feof(nf) && line_count < count) {
 	  
 	   double diff = distance(lat,lat_p,lng,lon_p);
 	   dis_ab = distance(lat_pa,lat_pb,lon_pa,lon_pb);
-//	   printf("%.2f  %.2f\n",diff,dis_ab);
+	   printf("Dist:%.2f  %.2f\n",diff,dis_ab);
 	   
 	   /*----------------------logic starts here---------------------------------------*/
 	   ang_ab=initial_bearing(lat_pa,lat_pb,lon_pa,lon_pb);
@@ -184,11 +184,13 @@ while (!feof(nf) && line_count < count) {
 	   ang_ac= initial_bearing(lat_pa,out_lat, lon_pa, out_lng);
 	   diffang_h=head-ang_ab;
 	   cte_ab = cross_track_error(dis_ac,ang_ab, ang_ac);
+           /*
            if((cte_ab <1.5 && cte_ab >0.0) || (cte_ab > -1.5 && cte_ab < 0.0)){
               prev_cte = -1.0*3.6154*cte_ab;
               }
-
-           prev_cte = -1*1.9154*cte_ab;
+           else{
+           prev_cte = -1*0.8154*cte_ab;
+           }
            if(prev_cte == 0.0){
             prdstpt = 0.0;
            }
@@ -196,17 +198,24 @@ while (!feof(nf) && line_count < count) {
                 double valf = (prev_cte/dis_ac);
                 if(valf >= 1.0){
                  prdstpt =90.0;
+                 printf("ATE:%.2f , %.2f\n",along_track_error(dis_ac,prev_cte), dis_ac);
                  }
                 else if(valf <= -1.0){
                  prdstpt = -90.0;
+                 printf("ATE %.2f, %.2f \n",along_track_error(dis_ac,prev_cte),dis_ac);
                  }
                 else{
-                printf("%.2f, %.2f \n",prev_cte,(prev_cte/dis_ac));
+                printf("%.2f, %.2f %.2f\n",prev_cte,dis_ac,(prev_cte/dis_ac));
                 prdstpt =ConvertRadtoDeg(asin(prev_cte / dis_ac));
-                 }
             }
+           }*/
+           if(cte_ab !=0.0){
+           prev_cte = -1*0.6154*cte_ab;
+           prdstpt =ConvertRadtoDeg(asin(prev_cte / dis_ac));
+           }
+
            //canbus = pidHead(diffang_h,(-5*cte_ab),100.0,0.0,0.0);
-           canbus = pidHead(diffang_h,prdstpt,100.0,0.0,10.0);
+           canbus = pidHead(diffang_h,2*prdstpt,100.0,0.0,10.0);
 	   printf("CTE:%.2f predst: %.2f setpt:%.2f %d\n",cte_ab,prdstpt,(-5*cte_ab),line_count); 
 	   sprintf(message,"%d\r\n",canbus);
 	   bytes_written = write(fds,message, sizeof(message));
